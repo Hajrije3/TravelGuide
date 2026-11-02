@@ -1,0 +1,51 @@
+---
+import { SITE } from '../site.config';
+import { CATEGORIES } from '../lib/categories';
+const path = Astro.url.pathname;
+---
+<header class="site-header">
+  <div class="container bar">
+    <a href="/" class="logo" aria-label={`${SITE.name} home`}>
+      <span class="mark" aria-hidden="true">✦</span>{SITE.name}
+    </a>
+    <button class="toggle" type="button" aria-expanded="false" aria-controls="main-nav">Menu</button>
+    <nav id="main-nav" aria-label="Main">
+      <ul>
+        {Object.entries(CATEGORIES).map(([key, c]) => (
+          <li><a href={`/category/${key}/`} aria-current={path.startsWith(`/category/${key}/`) ? 'page' : undefined}>{c.title}</a></li>
+        ))}
+        <li><a href="/sample-plans/" aria-current={path.startsWith('/sample-plans/') ? 'page' : undefined}>Sample plans</a></li>
+        <li><a href="/plan-my-trip/" class="nav-cta" aria-current={path.startsWith('/plan-my-trip/') ? 'page' : undefined}>Plan my trip</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.site-header .toggle')!;
+  btn.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+  });
+</script>
+
+<style>
+  .site-header { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+  .bar { display: flex; align-items: center; justify-content: space-between; min-height: 64px; gap: 16px; }
+  .logo { font: 700 1.25rem var(--font-serif); color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: .4em; }
+  .mark { color: var(--accent); }
+  .toggle { font: 600 1rem var(--font-sans); color: var(--ink); background: none; cursor: pointer; padding: 8px 14px; border: 1.5px solid var(--line); border-radius: 999px; }
+  nav { display: none; position: absolute; right: 16px; left: 16px; top: 64px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; box-shadow: 0 12px 30px rgb(0 0 0 / .08); }
+  .toggle[aria-expanded='true'] + nav { display: block; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  nav a { display: block; padding: 10px 12px; color: var(--ink); text-decoration: none; font-weight: 500; border-radius: 8px; }
+  nav a:hover, nav a[aria-current] { background: var(--accent-soft); color: var(--accent-ink); }
+  .nav-cta { color: var(--accent-ink); font-weight: 700; }
+
+  @media (min-width: 1140px) {
+    .toggle { display: none; }
+    nav { display: block; position: static; border: 0; box-shadow: none; padding: 0; background: none; }
+    ul { display: flex; gap: 2px; }
+    nav a { padding: 8px 10px; font-size: .95rem; }
+  }
+</style>

@@ -1,0 +1,43 @@
+---
+import { SITE } from '../site.config';
+import { CATEGORIES } from '../lib/categories';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container cols">
+    <div>
+      <p class="name">{SITE.name}</p>
+      <p class="muted">{SITE.positioning}</p>
+    </div>
+    <nav aria-label="Categories">
+      <p class="h">Guides</p>
+      <ul>{Object.entries(CATEGORIES).map(([k, c]) => <li><a href={`/category/${k}/`}>{c.title}</a></li>)}</ul>
+    </nav>
+    <nav aria-label="About">
+      <p class="h">About</p>
+      <ul>
+        <li><a href="/about/">About us</a></li>
+        <li><a href="/disclosure/">Affiliate disclosure</a></li>
+        <li><a href="/privacy/">Privacy</a></li>
+        <li><a href="/rss.xml">RSS</a></li>
+        {SITE.social.pinterest && <li><a href={SITE.social.pinterest} rel="me">Pinterest</a></li>}
+        {SITE.social.instagram && <li><a href={SITE.social.instagram} rel="me">Instagram</a></li>}
+      </ul>
+    </nav>
+  </div>
+  <div class="container legal">
+    © {year} {SITE.name}. Prices and schedules change. Always confirm with the provider before booking.
+  </div>
+</footer>
+
+<style>
+  .site-footer { background: var(--ink); color: #dfe5ea; margin-top: 80px; padding: 48px 0 24px; }
+  .site-footer a { color: #fff; text-decoration: none; }
+  .site-footer a:hover { text-decoration: underline; }
+  .muted, .legal { color: #a9b4be; }
+  .cols { display: grid; gap: 32px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .name { font: 700 1.3rem var(--font-serif); color: #fff; margin: 0 0 .4em; }
+  .h { font-weight: 700; text-transform: uppercase; font-size: .78rem; letter-spacing: .1em; color: #fff; margin: 0 0 .6em; }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .legal { margin-top: 40px; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / .12); font-size: .85rem; }
+</style>

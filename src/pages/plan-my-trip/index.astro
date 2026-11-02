@@ -1,0 +1,414 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../site.config';
+
+const tp = SITE.tripPlanning;
+const open = Boolean(tp.formEndpoint);
+const fromPrice = Math.min(...tp.packages.map((p) => p.price));
+const maxDays = Math.max(...tp.packages.map((p) => p.maxDays));
+
+const interests = ['Culture & museums', 'History & architecture', 'Food & drink', 'Nature & hiking', 'Beaches', 'Nightlife', 'Shopping', 'Photography spots', 'Family-friendly', 'Hidden gems'];
+const transport = ['Flights', 'Train', 'Bus', 'Rental car', 'Own car'];
+const diets = ['Halal', 'Vegetarian', 'Vegan', 'Gluten-free', 'Allergies (tell us in notes)'];
+
+// Client config passed to the script below
+const clientConfig = {
+  endpoint: tp.formEndpoint,
+  refParam: tp.paymentRefParam,
+  currency: tp.currency,
+  packages: tp.packages,
+};
+---
+<BaseLayout title="Plan my trip" description={`Tell us where you want to go, your budget and your dates. We'll send you a personalised trip plan within ${tp.deliveryTime}. From ${tp.currency}${fromPrice}.`}>
+  <section class="section container intro">
+    <div>
+      <p class="eyebrow">Personal trip planning</p>
+      <h1>Plan my trip</h1>
+      <p class="lead">Tell us where you're starting from, where you want to go, your budget and dates. We'll research it and send you a complete, personalised plan within {tp.deliveryTime}.</p>
+      <ol class="how">
+        <li><strong>Fill in the form</strong><span>About 5 minutes.</span></li>
+        <li><strong>Pay for your plan</strong><span>Secure checkout.</span></li>
+        <li><strong>Get your plan by email</strong><span>Within {tp.deliveryTime}.</span></li>
+      </ol>
+      <p class="samples-link">Not sure what you'll get? <a href="/sample-plans/">See sample plans →</a></p>
+    </div>
+    <aside class="card pricing" aria-labelledby="price-title">
+      <h2 id="price-title">Pricing</h2>
+      <ul class="tiers">
+        {tp.packages.map((p, i) => (
+          <li class:list={{ popular: p.popular }}>
+            <div class="tier-head">
+              <span><strong>{p.name}</strong>{p.popular && <span class="pop">Popular</span>}<small>{i === 0 ? 1 : tp.packages[i - 1].maxDays + 1}–{p.maxDays} days</small></span>
+              <span class="price">{tp.currency}{p.price}</span>
+            </div>
+            <p class="tier-desc">{p.description}</p>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  </section>
+
+  <section class="container form-wrap" aria-label="Trip request form">
+    {!open && (
+      <div class="notice notice-accent closed">
+        <p><strong>Trip planning requests open soon.</strong> Join the newsletter on the homepage to hear when it launches.</p>
+      </div>
+    )}
+
+    <form id="trip-form" class="card" novalidate data-config={JSON.stringify(clientConfig)}>
+      <ol class="progress" aria-label="Form progress">
+        <li class="active">Trip</li><li>Budget</li><li>Preferences</li><li>Contact</li>
+      </ol>
+
+      <!-- STEP 1 -->
+      <fieldset class="step" data-step="0">
+        <legend>Your trip</legend>
+        <div class="row">
+          <label>Travelling from (city) *<input name="fromCity" required placeholder="e.g. Prishtina" autocomplete="address-level2" /></label>
+          <label>Country *<input name="fromCountry" required placeholder="e.g. Kosovo" autocomplete="country-name" /></label>
+        </div>
+        <label>Where do you want to go? *
+          <input name="destination" id="destination" required placeholder="e.g. Prague, or Vienna + Budapest" />
+        </label>
+        <label class="check"><input type="checkbox" name="suggestDestination" id="suggest" /> I'm not sure yet. Suggest a destination for me.</label>
+
+        <p class="label">Travel dates *</p>
+        <div class="seg">
+          <label><input type="radio" name="dateType" value="exact" checked /> I have dates</label>
+          <label><input type="radio" name="dateType" value="flexible" /> I'm flexible</label>
+        </div>
+        <div class="row" data-show="exact">
+          <label>Start date *<input type="date" name="startDate" required /></label>
+        </div>
+        <div class="row" data-show="flexible" hidden>
+          <label>Preferred month(s) *<input name="flexibleMonths" required placeholder="e.g. May or June 2027" disabled /></label>
+        </div>
+
+        <div class="row three">
+          <label>Number of days *<input type="number" name="days" id="days" min="1" max={maxDays} required inputmode="numeric" /></label>
+          <label>Adults *<input type="number" name="adults" min="1" max="20" value="1" required inputmode="numeric" /></label>
+          <label>Children<input type="number" name="children" id="children" min="0" max="10" value="0" inputmode="numeric" /></label>
+        </div>
+        <label data-children hidden>Children's ages<input name="childrenAges" placeholder="e.g. 4 and 9" /></label>
+      </fieldset>
+
+      <!-- STEP 2 -->
+      <fieldset class="step" data-step="1" hidden>
+        <legend>Budget</legend>
+        <div class="row">
+          <label>Budget ({tp.currency}) *<input type="number" name="budget" min="1" required inputmode="numeric" placeholder="e.g. 800" /></label>
+          <label>The budget is *
+            <select name="budgetPer" required>
+              <option value="total">Total for the whole group</option>
+              <option value="person">Per person</option>
+            </select>
+          </label>
+        </div>
+        <p class="label">My budget needs to cover</p>
+        <div class="chips">
+          {['Getting there (flights/transport)', 'Accommodation', 'Food', 'Activities & tickets', 'Local transport'].map((x) => (
+            <label class="chip"><input type="checkbox" name="budgetCovers" value={x} checked /> {x}</label>
+          ))}
+        </div>
+        <p class="label">Already booked</p>
+        <div class="chips">
+          {['Flights / transport', 'Accommodation'].map((x) => <label class="chip"><input type="checkbox" name="alreadyBooked" value={x} /> {x}</label>)}
+        </div>
+        <div class="row">
+          <label>Travel style
+            <select name="style">
+              <option>Budget: keep costs as low as possible</option>
+              <option selected>Balanced: good value, some comfort</option>
+              <option>Comfort: willing to spend for convenience</option>
+            </select>
+          </label>
+          <label>Where do you like to stay?
+            <select name="accommodation">
+              <option>No preference</option><option>Hotel</option><option>Apartment</option><option>Hostel</option><option>Guesthouse / B&amp;B</option>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <!-- STEP 3 -->
+      <fieldset class="step" data-step="2" hidden>
+        <legend>Your preferences</legend>
+        <p class="label">What do you enjoy? (pick any)</p>
+        <div class="chips">{interests.map((x) => <label class="chip"><input type="checkbox" name="interests" value={x} /> {x}</label>)}</div>
+        <p class="label">Pace</p>
+        <div class="seg">
+          {['Relaxed', 'Balanced', 'Packed'].map((x) => <label><input type="radio" name="pace" value={x} checked={x === 'Balanced'} /> {x}</label>)}
+        </div>
+        <p class="label">How are you happy to travel?</p>
+        <div class="chips">{transport.map((x) => <label class="chip"><input type="checkbox" name="transport" value={x} /> {x}</label>)}</div>
+        <p class="label">Food needs</p>
+        <div class="chips">{diets.map((x) => <label class="chip"><input type="checkbox" name="diet" value={x} /> {x}</label>)}</div>
+        <label class="check"><input type="checkbox" name="prayerFacilities" /> Include nearby mosques / prayer facilities</label>
+        <label>Accessibility or mobility needs<input name="accessibility" placeholder="e.g. limited walking, step-free access" /></label>
+        <label>Anything else we should know?
+          <textarea name="notes" rows="4" placeholder="Special occasion, must-see places, things to avoid, visa questions…"></textarea>
+        </label>
+      </fieldset>
+
+      <!-- STEP 4 -->
+      <fieldset class="step" data-step="3" hidden>
+        <legend>Your details</legend>
+        <div class="row">
+          <label>Full name *<input name="name" required autocomplete="name" /></label>
+          <label>Email *<input type="email" name="email" required autocomplete="email" /></label>
+        </div>
+        <label>Phone / WhatsApp (optional)<input type="tel" name="phone" autocomplete="tel" /></label>
+
+        <div class="summary" aria-live="polite">
+          <p class="h">Your plan</p>
+          <p id="summary-text" class="muted"></p>
+          <p class="total"><span id="pkg-name"></span><strong id="pkg-price"></strong></p>
+        </div>
+
+        <label class="check"><input type="checkbox" name="consent" required /> I agree that my details are used to prepare my trip plan, as described in the <a href="/privacy/" target="_blank">privacy policy</a>. *</label>
+        <!-- Honeypot: bots fill it, humans never see it -->
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off" /></label>
+      </fieldset>
+
+      <p class="error" id="form-error" role="alert" hidden></p>
+
+      <div class="nav">
+        <button type="button" class="btn btn-ghost" id="back" hidden>Back</button>
+        <button type="button" class="btn" id="next">Continue</button>
+        <button type="submit" class="btn" id="submit" hidden disabled={!open}>{open ? 'Continue to payment' : 'Not open yet'}</button>
+      </div>
+    </form>
+
+    <div id="done" class="card done" hidden>
+      <h2>Thank you, request received!</h2>
+      <p>Your reference: <strong id="done-ref"></strong></p>
+      <p>We'll email you payment instructions shortly. Once payment is confirmed, your plan arrives within {tp.deliveryTime}.</p>
+    </div>
+  </section>
+
+  <section class="section container prose-width faq">
+    <h2>Questions</h2>
+    <details><summary>What do I actually receive?</summary><p>A personalised plan by email (PDF) with a day-by-day itinerary, how to get there from your city, where to stay, a budget breakdown and booking links. We don't book anything for you, so you stay in control.</p></details>
+    <details><summary>How long does it take?</summary><p>Within {tp.deliveryTime} after payment. If we need more information, we'll email you.</p></details>
+    <details><summary>Can I ask for changes?</summary><p>Yes, one round of small changes is included. Reply to the email with your plan.</p></details>
+    <details><summary>Are prices in the plan guaranteed?</summary><p>No. Prices are checked when we write your plan, but fares and rates change. We show the date we checked them.</p></details>
+  </section>
+</BaseLayout>
+
+<script>
+  type Pkg = { id: string; name: string; maxDays: number; price: number; paymentLink: string };
+  type Config = { endpoint: string; refParam: string; currency: string; packages: Pkg[] };
+
+  const form = document.getElementById('trip-form') as HTMLFormElement;
+  const cfg: Config = JSON.parse(form.dataset.config!);
+  const steps = [...form.querySelectorAll<HTMLFieldSetElement>('.step')];
+  const progress = [...form.querySelectorAll('.progress li')];
+  const back = document.getElementById('back') as HTMLButtonElement;
+  const next = document.getElementById('next') as HTMLButtonElement;
+  const submit = document.getElementById('submit') as HTMLButtonElement;
+  const errorBox = document.getElementById('form-error')!;
+  let current = 0;
+
+  const field = <T extends Element = HTMLInputElement>(name: string) => form.elements.namedItem(name) as unknown as T;
+
+  // Start date can't be in the past
+  field('startDate').min = new Date().toISOString().slice(0, 10);
+
+  // Pre-fill from links such as /plan-my-trip/?destination=Budapest&days=3 (used by sample plans)
+  const params = new URLSearchParams(location.search);
+  const preDest = params.get('destination');
+  const preDays = Number(params.get('days'));
+  if (preDest) field('destination').value = preDest.slice(0, 100);
+  if (preDays > 0 && preDays <= Number(field('days').max)) field('days').value = String(Math.floor(preDays));
+
+  // "Suggest a destination" makes the destination optional
+  const dest = field('destination');
+  field('suggestDestination').addEventListener('change', (e) => {
+    const on = (e.target as HTMLInputElement).checked;
+    dest.required = !on;
+    dest.placeholder = on ? 'Optional: any countries or regions you like?' : 'e.g. Prague, or Vienna + Budapest';
+  });
+
+  // Exact dates vs flexible month
+  form.querySelectorAll<HTMLInputElement>('input[name="dateType"]').forEach((r) =>
+    r.addEventListener('change', () => {
+      form.querySelectorAll<HTMLElement>('[data-show]').forEach((el) => {
+        const show = el.dataset.show === r.value;
+        el.hidden = !show;
+        el.querySelectorAll('input').forEach((i) => (i.disabled = !show));
+      });
+    }),
+  );
+
+  // Show children's ages only when there are children
+  field('children').addEventListener('input', (e) => {
+    (form.querySelector('[data-children]') as HTMLElement).hidden = !(Number((e.target as HTMLInputElement).value) > 0);
+  });
+
+  function pickPackage(days: number) {
+    return cfg.packages.find((p) => days <= p.maxDays) ?? cfg.packages[cfg.packages.length - 1];
+  }
+
+  function collect() {
+    const fd = new FormData(form);
+    const data: Record<string, string | string[] | boolean> = {};
+    for (const key of new Set(fd.keys())) {
+      const all = fd.getAll(key).map(String);
+      data[key] = ['budgetCovers', 'alreadyBooked', 'interests', 'transport', 'diet'].includes(key) ? all : all[0];
+    }
+    for (const k of ['suggestDestination', 'prayerFacilities', 'consent']) data[k] = fd.has(k);
+    delete data.website;
+    return data;
+  }
+
+  function updateSummary() {
+    const d = collect();
+    const days = Number(d.days) || 0;
+    const pkg = pickPackage(days);
+    const where = d.suggestDestination ? 'a destination we suggest' : String(d.destination);
+    const when = d.dateType === 'exact' ? `from ${d.startDate}` : `in ${d.flexibleMonths}`;
+    const people = `${d.adults} adult${d.adults === '1' ? '' : 's'}${Number(d.children) ? ` + ${d.children} child${d.children === '1' ? '' : 'ren'}` : ''}`;
+    document.getElementById('summary-text')!.textContent =
+      `${days} days, ${d.fromCity} → ${where}, ${when}, ${people}, budget ${cfg.currency}${d.budget} ${d.budgetPer === 'person' ? 'per person' : 'total'}.`;
+    document.getElementById('pkg-name')!.textContent = pkg.name;
+    document.getElementById('pkg-price')!.textContent = `${cfg.currency}${pkg.price}`;
+    if (!submit.disabled) submit.textContent = `Continue to payment: ${cfg.currency}${pkg.price}`;
+  }
+
+  function validStep(i: number) {
+    const inputs = [...steps[i].querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select, textarea')].filter((el) => !el.disabled);
+    for (const el of inputs) {
+      if (!el.checkValidity()) { el.reportValidity(); el.focus(); return false; }
+    }
+    return true;
+  }
+
+  function show(i: number) {
+    current = i;
+    steps.forEach((s, j) => (s.hidden = j !== i));
+    progress.forEach((p, j) => { p.classList.toggle('active', j === i); p.classList.toggle('done', j < i); });
+    back.hidden = i === 0;
+    next.hidden = i === steps.length - 1;
+    submit.hidden = i !== steps.length - 1;
+    errorBox.hidden = true;
+    if (i === steps.length - 1) updateSummary();
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  next.addEventListener('click', () => { if (validStep(current)) show(current + 1); });
+  back.addEventListener('click', () => show(current - 1));
+  // Enter key on earlier steps should advance, not submit
+  form.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && current < steps.length - 1 && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+      e.preventDefault(); next.click();
+    }
+  });
+
+  function makeRef() {
+    const d = new Date();
+    const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    return `TRIP-${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${rand}`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validStep(current) || !cfg.endpoint) return;
+    if (field('website').value) return; // honeypot triggered
+
+    const data = collect();
+    const pkg = pickPackage(Number(data.days));
+    const reference = makeRef();
+    const payload = { reference, package: pkg.name, price: `${cfg.currency}${pkg.price}`, submittedAt: new Date().toISOString(), ...data };
+
+    submit.disabled = true;
+    submit.textContent = 'Sending…';
+    try {
+      const res = await fetch(cfg.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ _subject: `Trip plan request ${reference}`, ...payload }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      if (pkg.paymentLink) {
+        const url = new URL(pkg.paymentLink);
+        url.searchParams.set(cfg.refParam, reference);
+        if (typeof data.email === 'string') url.searchParams.set('prefilled_email', data.email);
+        location.href = url.href;
+      } else {
+        // No payment link configured yet: confirm and handle payment by email
+        form.hidden = true;
+        document.getElementById('done-ref')!.textContent = reference;
+        (document.getElementById('done') as HTMLElement).hidden = false;
+      }
+    } catch {
+      errorBox.textContent = "Sorry, we couldn't send your request. Please check your connection and try again.";
+      errorBox.hidden = false;
+      submit.disabled = false;
+      updateSummary();
+    }
+  });
+</script>
+
+<style>
+  .intro { display: grid; gap: 32px; align-items: start; }
+  @media (min-width: 900px) { .intro { grid-template-columns: 1.3fr 1fr; } }
+  .how { list-style: none; counter-reset: s; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+  .how li { counter-increment: s; display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; }
+  .how li::before { content: counter(s); grid-row: span 2; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .how span { color: var(--ink-soft); font-size: .95rem; }
+  .samples-link { margin-top: 24px; font-weight: 600; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: calc(var(--radius) * 1.5); padding: clamp(20px, 4vw, 36px); }
+  .pricing h2 { margin: 0 0 16px; }
+  .tiers { list-style: none; padding: 0; margin: 0 0 20px; }
+  .tiers li { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .tiers li.popular { background: var(--accent-soft); border: 1.5px solid var(--accent); border-radius: var(--radius); padding: 14px; margin: 8px -14px; }
+  .tier-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .pop { display: inline-block; margin-left: 8px; background: var(--accent); color: #fff; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 2px 8px; border-radius: 999px; vertical-align: middle; }
+  .tier-desc { margin: 6px 0 0; font-size: .9rem; color: var(--ink-soft); }
+  .tiers small { display: block; color: var(--muted); }
+  .price { font: 700 1.5rem var(--font-serif); color: var(--accent-ink); }
+  .h { font-weight: 700; margin: 0 0 8px; }
+  .includes { margin: 0; padding-left: 1.2em; color: var(--ink-soft); font-size: .95rem; }
+
+  .form-wrap { max-width: 800px; }
+  .closed { margin-bottom: 16px; }
+  .progress { list-style: none; padding: 0; margin: 0 0 28px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: .82rem; font-weight: 600; color: var(--muted); }
+  .progress li { border-top: 4px solid var(--line); padding-top: 6px; }
+  .progress li.active { border-color: var(--accent); color: var(--ink); }
+  .progress li.done { border-color: var(--sea); }
+
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 16px; min-width: 0; }
+  legend { font: 700 1.6rem var(--font-serif); margin-bottom: 8px; padding: 0; }
+  label { display: grid; gap: 6px; font-weight: 600; font-size: .95rem; }
+  .label { font-weight: 600; font-size: .95rem; margin: 4px 0 -8px; }
+  input:not([type='checkbox'], [type='radio']), select, textarea {
+    font: 400 1rem var(--font-sans); padding: .7em .85em; border: 1.5px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--sea); outline: none; box-shadow: 0 0 0 3px var(--sea-soft); }
+  input[type='checkbox'], input[type='radio'] { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; flex: none; }
+  .row { display: grid; gap: 16px; }
+  @media (min-width: 640px) { .row { grid-template-columns: 1fr 1fr; } .row.three { grid-template-columns: repeat(3, 1fr); } }
+  .row[hidden], [hidden] { display: none !important; }
+  .check { display: flex; align-items: flex-start; gap: 10px; font-weight: 400; }
+  .seg, .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .seg label, .chip { display: flex; align-items: center; gap: 8px; font-weight: 500; padding: 8px 14px; border: 1.5px solid var(--line); border-radius: 999px; cursor: pointer; }
+  .seg label:has(input:checked), .chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+
+  .summary { background: var(--sea-soft); border-radius: var(--radius); padding: 16px 20px; }
+  .summary p { margin: 0 0 6px; }
+  .total { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.1rem; margin-top: 10px !important; }
+  .total strong { font: 700 1.6rem var(--font-serif); color: var(--accent-ink); }
+  .hp { position: absolute; left: -9999px; }
+
+  .error { color: #b42318; background: #fef3f2; padding: 10px 14px; border-radius: 8px; margin: 16px 0 0; }
+  .nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 28px; }
+  .nav #next, .nav #submit { margin-left: auto; }
+  .done { text-align: center; }
+  .done h2 { margin-top: 0; }
+
+  .faq details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+  .faq summary { font-weight: 600; cursor: pointer; }
+  .faq p { color: var(--ink-soft); margin: 10px 0 0; }
+</style>

@@ -1,0 +1,34 @@
+---
+import { SITE } from '../site.config';
+
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+const enabled = Boolean(SITE.newsletterAction);
+---
+<section class:list={['newsletter', { compact }]} aria-labelledby="nl-title">
+  <div>
+    <p class="eyebrow">Free download</p>
+    <h2 id="nl-title">Get the weekend trip checklist</h2>
+    <p>One practical checklist for planning a short European trip, plus occasional new guides and destination ideas. No spam; unsubscribe anytime.</p>
+  </div>
+  <form method="post" action={enabled ? SITE.newsletterAction : undefined} target="_blank">
+    <label for="nl-email" class="sr">Email address</label>
+    <input id="nl-email" type="email" name={SITE.newsletterFieldName} placeholder="you@example.com" required autocomplete="email" disabled={!enabled} />
+    <button class="btn" type="submit" disabled={!enabled}>{enabled ? 'Send me the checklist' : 'Coming soon'}</button>
+    <p class="fine">By subscribing you agree to our <a href="/privacy/">privacy policy</a>.</p>
+  </form>
+</section>
+
+<style>
+  .newsletter { background: var(--sea); color: #fff; border-radius: calc(var(--radius) * 1.5); padding: clamp(24px, 5vw, 48px); display: grid; gap: 24px; align-items: center; }
+  @media (min-width: 820px) { .newsletter:not(.compact) { grid-template-columns: 1.2fr 1fr; } }
+  .eyebrow { color: #ffd8c4; }
+  h2 { margin: 0 0 .4em; color: #fff; }
+  p { margin: 0; color: #e3eff2; }
+  form { display: grid; gap: 10px; }
+  input { font: inherit; padding: .8em 1em; border-radius: 999px; border: 0; width: 100%; }
+  input:disabled { background: #eef3f5; }
+  .fine { font-size: .82rem; }
+  .fine a { color: #fff; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>

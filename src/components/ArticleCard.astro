@@ -1,0 +1,44 @@
+---
+import { CATEGORIES } from '../lib/categories';
+import { articleUrl, formatDate, type Article } from '../lib/articles';
+
+interface Props { article: Article }
+const { article } = Astro.props;
+const { title, description, category, heroImage, heroAlt, pubDate, draft } = article.data;
+---
+<article class="card">
+  <a href={articleUrl(article)} class="media" tabindex="-1" aria-hidden="true">
+    {heroImage
+      ? <img src={heroImage} alt={heroAlt ?? ''} loading="lazy" width="640" height="400" />
+      : <div class={`ph ph-${category}`}><span>{CATEGORIES[category].title}</span></div>}
+  </a>
+  <div class="body">
+    <p class="meta">
+      <a href={`/category/${category}/`} class="badge">{CATEGORIES[category].title}</a>
+      {draft && <span class="badge badge-draft">Draft</span>}
+    </p>
+    <h3><a href={articleUrl(article)}>{title}</a></h3>
+    <p class="desc">{description}</p>
+    {!draft && <p class="date muted"><time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time></p>}
+  </div>
+</article>
+
+<style>
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s, transform .2s; }
+  .card:hover { box-shadow: 0 10px 28px rgb(31 45 58 / .1); transform: translateY(-2px); }
+  .media img, .ph { aspect-ratio: 16 / 10; width: 100%; object-fit: cover; }
+  .ph { display: grid; place-items: center; color: #fff; font: 700 1.2rem var(--font-serif); opacity: .95; }
+  .ph-destinations { background: linear-gradient(135deg, #1f5f74, #3f8ea3); }
+  .ph-budgets { background: linear-gradient(135deg, #9c3f1b, #d9774a); }
+  .ph-itineraries { background: linear-gradient(135deg, #3d5a40, #6f9a6b); }
+  .ph-accommodation { background: linear-gradient(135deg, #5b4a7a, #8b78ad); }
+  .ph-resources { background: linear-gradient(135deg, #1f2d3a, #4b5d6e); }
+  .body { padding: 18px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+  .meta { display: flex; gap: 6px; margin: 0 0 .6em; }
+  .meta a { text-decoration: none; }
+  h3 { margin: 0 0 .4em; font-size: 1.2rem; }
+  h3 a { color: var(--ink); text-decoration: none; }
+  h3 a:hover { color: var(--accent-ink); }
+  .desc { color: var(--ink-soft); font-size: .97rem; margin: 0 0 .8em; flex: 1; }
+  .date { font-size: .85rem; margin: 0; }
+</style>

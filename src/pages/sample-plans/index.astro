@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SampleCard from '../../components/SampleCard.astro';
+import { SAMPLES } from '../../lib/samples';
+import { SITE } from '../../site.config';
+
+const fromPrice = Math.min(...SITE.tripPlanning.packages.map((p) => p.price));
+---
+<BaseLayout title="Sample travel plans" description="See what a personalised trip plan looks like: sample plans for Budapest, Prague, Vienna, Venice and Istanbul.">
+  <section class="section container">
+    <p class="eyebrow">Sample travel plans</p>
+    <h1>See what your plan will look like</h1>
+    <p class="lead">These are previews of real plans we've made for fictional travelers. Open one to see the overview, the budget and the full first day. Your own plan covers every day, built around your departure city, dates and budget.</p>
+    <p><a class="btn" href="/plan-my-trip/">Request your plan (from {SITE.tripPlanning.currency}{fromPrice})</a></p>
+  </section>
+
+  <section class="container">
+    <div class="grid">{SAMPLES.map((s) => <SampleCard sample={s} />)}</div>
+  </section>
+
+  <section class="section container prose-width">
+    <h2>What every full plan includes</h2>
+    <ul class="incl">
+      <li>A destination cover and trip overview</li>
+      <li>An estimated budget for your group</li>
+      <li>A day-by-day itinerary, split into morning, afternoon and evening</li>
+      <li>Restaurants and food recommendations, matched to your dietary needs</li>
+      <li>Accommodation areas compared, so you know where to book</li>
+      <li>Step-by-step transport instructions from your departure city</li>
+      <li>Google Maps links for every place</li>
+      <li>Useful local tips that save you money and time</li>
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .incl { list-style: none; padding: 0; display: grid; gap: 10px; }
+  .incl li { padding-left: 30px; position: relative; }
+  .incl li::before { content: '✓'; position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--sea-soft); color: var(--sea); font-weight: 700; font-size: .8rem; display: grid; place-items: center; }
+</style>

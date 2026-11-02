@@ -1,0 +1,18 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { SITE } from '../site.config';
+---
+<PageLayout title="Privacy policy" description={`How ${SITE.name} handles your data.`}>
+  <div class="notice notice-accent">
+    <p><strong>Placeholder, not legal advice.</strong> Replace this page with a privacy policy that matches the analytics, email provider, affiliate partners and ad networks you actually use, and the laws that apply to you (e.g. GDPR for EU readers).</p>
+  </div>
+
+  <h2>What this page should cover</h2>
+  <ul>
+    <li>Who runs the site and how to contact you.</li>
+    <li>Email signups: which provider stores subscriber addresses and how to unsubscribe.</li>
+    <li>Analytics: which tool you use and whether it sets cookies.</li>
+    <li>Affiliate links and ads: that partners may set cookies to track referrals.</li>
+    <li>Readers' rights to access or delete their data.</li>
+  </ul>
+</PageLayout>

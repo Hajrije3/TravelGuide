@@ -1,0 +1,107 @@
+---
+import { render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { SITE } from '../../site.config';
+import { CATEGORIES } from '../../lib/categories';
+import { getArticles, formatDate, readingMinutes, type Article } from '../../lib/articles';
+
+export async function getStaticPaths() {
+  const articles = await getArticles();
+  return articles.map((article) => ({ params: { slug: article.id }, props: { article } }));
+}
+
+const { article } = Astro.props as { article: Article };
+const d = article.data;
+const { Content, headings } = await render(article);
+const toc = headings.filter((h) => h.depth === 2);
+const related = (await getArticles(d.category)).filter((a) => a.id !== article.id).slice(0, 3);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: d.title,
+  description: d.description,
+  datePublished: d.pubDate.toISOString(),
+  dateModified: (d.updatedDate ?? d.pubDate).toISOString(),
+  author: { '@type': 'Organization', name: SITE.name },
+  publisher: { '@type': 'Organization', name: SITE.name },
+  mainEntityOfPage: canonical,
+  ...(d.heroImage ? { image: new URL(d.heroImage, Astro.site).href } : {}),
+};
+---
+<BaseLayout title={d.title} description={d.description} image={d.heroImage} type="article" noindex={d.draft} jsonLd={jsonLd}>
+  <article>
+    <header class="section container prose-width head">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href={`/category/${d.category}/`}>{CATEGORIES[d.category].title}</a></nav>
+      {d.draft && <p><span class="badge badge-draft">Draft · only visible in dev</span></p>}
+      {d.sponsored && <p><span class="badge">Sponsored</span></p>}
+      <h1>{d.title}</h1>
+      <p class="lead">{d.description}</p>
+      <p class="byline muted">
+        <span>Published <time datetime={d.pubDate.toISOString()}>{formatDate(d.pubDate)}</time></span>
+        {d.updatedDate && <span>Updated <time datetime={d.updatedDate.toISOString()}>{formatDate(d.updatedDate)}</time></span>}
+        <span>{readingMinutes(article.body)} min read</span>
+      </p>
+    </header>
+
+    {d.heroImage && (
+      <figure class="container hero-img">
+        <img src={d.heroImage} alt={d.heroAlt ?? ''} width="1600" height="900" fetchpriority="high" />
+        {d.heroCredit && (
+          <figcaption>
+            Photo: <a href={d.heroCredit.source} rel="nofollow">{d.heroCredit.author}</a>,{' '}
+            {d.heroCredit.licenseUrl ? <a href={d.heroCredit.licenseUrl} rel="license nofollow">{d.heroCredit.license}</a> : d.heroCredit.license}, via Wikimedia Commons
+          </figcaption>
+        )}
+      </figure>
+    )}
+
+    <div class="container prose-width">
+      {(d.pricesCheckedOn || d.affiliate) && (
+        <div class="notices">
+          {d.pricesCheckedOn && (
+            <div class="notice"><p><strong>Prices checked on {formatDate(d.pricesCheckedOn)}.</strong> Fares, rates and opening hours change, so confirm with the provider before you book.</p></div>
+          )}
+          {d.affiliate && (
+            <div class="notice notice-accent"><p>This guide contains affiliate links. If you book through them we may earn a commission at no extra cost to you. It never changes what we recommend. <a href="/disclosure/">How we work</a>.</p></div>
+          )}
+        </div>
+      )}
+
+      {toc.length > 2 && (
+        <nav class="toc" aria-label="In this guide">
+          <p><strong>In this guide</strong></p>
+          <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+
+      <div class="prose"><Content /></div>
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="section container">
+      <div class="section-head"><h2>More {CATEGORIES[d.category].title.toLowerCase()}</h2></div>
+      <div class="grid">{related.map((a) => <ArticleCard article={a} />)}</div>
+    </section>
+  )}
+
+  <section class="container"><Newsletter /></section>
+</BaseLayout>
+
+<style>
+  .head { padding-bottom: 24px; }
+  .crumbs { font-size: .9rem; margin-bottom: 16px; color: var(--muted); }
+  .byline { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .92rem; }
+  .hero-img img { border-radius: var(--radius); width: 100%; aspect-ratio: 16 / 9; max-height: 600px; object-fit: cover; }
+  figure { margin: 0 auto 32px; }
+  figcaption { font-size: .8rem; color: var(--muted); margin-top: 8px; text-align: right; }
+  figcaption a { color: inherit; }
+  .notices { display: grid; gap: 12px; margin-bottom: 28px; }
+  .toc { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 32px; }
+  .toc p { margin: 0 0 .4em; }
+  .toc ol { margin: 0; padding-left: 1.2em; }
+</style>

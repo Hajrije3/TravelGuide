@@ -1,0 +1,19 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import { SITE } from '../site.config';
+---
+<PageLayout eyebrow="About" title={`About ${SITE.name}`} description={SITE.positioning}>
+  <!-- TODO: replace with your own story: who you are, where you travel from, and why readers should trust you. -->
+  <p>{SITE.name} is an independent travel publication for people who want to see more of Europe without overspending. We focus on practical planning: what a trip really costs, how to get between places, where to stay and how to fit it all into a weekend or a short break.</p>
+
+  <h2>How we write our guides</h2>
+  <ul>
+    <li><strong>Costs are date-stamped.</strong> Every budget says when prices were checked and what is included.</li>
+    <li><strong>Itineraries are realistic.</strong> We include transport details and honest timing.</li>
+    <li><strong>We explain trade-offs.</strong> Neighborhood comparisons tell you who each area suits, not just which is "best".</li>
+    <li><strong>We are transparent about money.</strong> Affiliate links and sponsored content are always disclosed. See our <a href="/disclosure/">disclosure policy</a>.</li>
+  </ul>
+
+  <h2>A Balkan perspective</h2>
+  <p>Many of our route and cost guides consider travelers starting from the Balkans, including Kosovo: which airports to use, which connections work, and what to budget for.</p>
+</PageLayout>

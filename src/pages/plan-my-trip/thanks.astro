@@ -1,0 +1,11 @@
+---
+// Set this page as the "success / redirect URL" in your payment provider:
+//   https://YOUR-DOMAIN/plan-my-trip/thanks/
+import PageLayout from '../../layouts/PageLayout.astro';
+import { SITE } from '../../site.config';
+---
+<PageLayout eyebrow="Payment received" title="Thank you, your trip is in good hands" noindex>
+  <p>We've received your payment and your trip details. Your personalised plan will arrive by email within <strong>{SITE.tripPlanning.deliveryTime}</strong>.</p>
+  <p>If we need anything else to plan your trip, we'll email you. Please check your spam folder if you don't hear from us.</p>
+  <p>While you wait: <a href="/category/resources/">travel resources</a> · <a href="/category/budgets/">travel budgets</a></p>
+</PageLayout>

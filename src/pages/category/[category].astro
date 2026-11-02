@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { CATEGORIES, CATEGORY_KEYS, type CategoryKey } from '../../lib/categories';
+import { getArticles } from '../../lib/articles';
+
+export function getStaticPaths() {
+  return CATEGORY_KEYS.map((category) => ({ params: { category } }));
+}
+
+const category = Astro.params.category as CategoryKey;
+const meta = CATEGORIES[category];
+const articles = await getArticles(category);
+---
+<BaseLayout title={meta.title} description={meta.description}>
+  <section class="section container">
+    <p class="eyebrow">Guides</p>
+    <h1>{meta.title}</h1>
+    <p class="lead">{meta.description}</p>
+  </section>
+  <section class="container">
+    {articles.length
+      ? <div class="grid">{articles.map((a) => <ArticleCard article={a} />)}</div>
+      : <p class="empty">No {meta.title.toLowerCase()} guides published yet. They're on the way.</p>}
+  </section>
+</BaseLayout>

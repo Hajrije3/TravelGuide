@@ -1,0 +1,24 @@
+---
+import PageLayout from '../layouts/PageLayout.astro';
+import Newsletter from '../components/Newsletter.astro';
+---
+<PageLayout
+  eyebrow="Digital product · coming soon"
+  title="European Weekend Travel Planner"
+  description="Everything you need to plan a short European trip, in one download: itinerary, budget, bookings and packing."
+>
+  <h2>What's inside</h2>
+  <ul>
+    <li><strong>Three-day itinerary planner</strong>: morning, afternoon and evening blocks with travel times.</li>
+    <li><strong>Budget calculator and expense tracker</strong>: plan before you go, track while you're there.</li>
+    <li><strong>Accommodation comparison sheet</strong>: compare areas, prices and what's included side by side.</li>
+    <li><strong>Packing checklist and travel essentials</strong>: built for carry-on-only weekends.</li>
+    <li><strong>Transport planning and booking checklist</strong>: flights, trains, buses and airport transfers.</li>
+    <li><strong>Reservations, addresses and notes</strong>: all your confirmations in one place.</li>
+  </ul>
+
+  <h2>Want it first?</h2>
+  <p>We're building the planner around what readers actually need. Join the list below and tell us which part would help you most. Subscribers get it first.</p>
+
+  <div slot="after" class="container prose-width"><Newsletter compact /></div>
+</PageLayout>
